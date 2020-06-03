@@ -75,12 +75,12 @@ public class CacheSimulator {
             instructionHitRate =0;
         }
         else{
-            instructionMissRate = (instructionCache.getReadMissCounter() + instructionCache.getWriteMissCounter()) / (instructionCache.getWriteCounter() + instructionCache.getReadCounter());
+            instructionMissRate = (float)(instructionCache.getReadMissCounter() + instructionCache.getWriteMissCounter()) / (float)(instructionCache.getWriteCounter() + instructionCache.getReadCounter());
             instructionHitRate = 1 - instructionMissRate;
 
         }
 
-        dataMissRate = (dataCache.getReadMissCounter() + dataCache.getWriteMissCounter()) / (dataCache.getWriteCounter() + dataCache.getReadCounter());
+        dataMissRate = (float)(dataCache.getReadMissCounter() + dataCache.getWriteMissCounter()) / (float)(dataCache.getWriteCounter() + dataCache.getReadCounter());
         dataHitRate = 1 - dataMissRate;
         System.out.println("***CACHE SETTINGS***");
         System.out.println("Unified I- D-cache");
