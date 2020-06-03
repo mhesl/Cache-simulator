@@ -49,14 +49,14 @@ public class CacheSimulator {
             int condition = Integer.parseInt(addresses.get(i)[0]);
             int address = Int_Hex.hex_to_int(addresses.get(i)[1]);
             if (condition == 0)
-                dataCache.read(address);
+                dataCache.read(address, 0);
             else if (condition == 1)
                 dataCache.write(address);
             else if (condition == 2) {
                 if (unifiedOrNot == 1)
-                    instructionCache.read(address);
+                    instructionCache.read(address, 1);
                 else if (unifiedOrNot == 0)
-                    dataCache.read(address);
+                    dataCache.read(address, 1);
             }
         }
         if (policy.equals("wb") && allocation.equals("wa"))
@@ -70,17 +70,15 @@ public class CacheSimulator {
         float instructionHitRate;
         float dataMissRate;
         float dataHitRate;
-        if ((instructionCache.getWriteCounter() + instructionCache.getReadCounter()) == 0) {
+        if ((dataCache.getInsReadCounter() + instructionCache.getInsReadCounter()) == 0) {
             instructionMissRate = 0;
-            instructionHitRate =0;
-        }
-        else{
-            instructionMissRate = (float)(instructionCache.getReadMissCounter() + instructionCache.getWriteMissCounter()) / (float)(instructionCache.getWriteCounter() + instructionCache.getReadCounter());
+            instructionHitRate = 0;
+        } else {
+            instructionMissRate = (float) (instructionCache.getInsMissReadCounter()  + dataCache.getInsMissReadCounter()) / (float) ( instructionCache.getInsReadCounter() + dataCache.getInsReadCounter());
             instructionHitRate = 1 - instructionMissRate;
 
         }
-
-        dataMissRate = (float)(dataCache.getReadMissCounter() + dataCache.getWriteMissCounter()) / (float)(dataCache.getWriteCounter() + dataCache.getReadCounter());
+        dataMissRate = (float) (dataCache.getDataReadMissCounter() + dataCache.getWriteMissCounter()) / (float) (dataCache.getWriteCounter() + dataCache.getDataReadCounter());
         dataHitRate = 1 - dataMissRate;
         System.out.println("***CACHE SETTINGS***");
         System.out.println("Unified I- D-cache");
@@ -98,13 +96,14 @@ public class CacheSimulator {
         System.out.println();
         System.out.println("***CACHE STATISTICS***");
         System.out.println("INSTRUCTIONS");
-        System.out.println("accesses: " + (instructionCache.getWriteCounter() + instructionCache.getReadCounter()));
-        System.out.println("misses: " + (instructionCache.getWriteMissCounter() + instructionCache.getReadMissCounter()));
+        System.out.println("accesses: " + (instructionCache.getWriteCounter() + instructionCache.getInsReadCounter() + dataCache.getInsReadCounter()));
+        System.out.println("misses: " + (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()));
         System.out.println("miss rate: " + instructionMissRate + " " + "(" + instructionHitRate + ")");
         System.out.println("replace: ");
+
         System.out.println("DATA");
-        System.out.println("accesses: " + (dataCache.getWriteCounter() + dataCache.getReadCounter()));
-        System.out.println("misses: " + (dataCache.getWriteMissCounter() + dataCache.getReadMissCounter()));
+        System.out.println("accesses: " + (dataCache.getWriteCounter() + dataCache.getDataReadCounter()));
+        System.out.println("misses: " + (dataCache.getWriteMissCounter() + dataCache.getDataReadMissCounter()));
         System.out.println("miss rate: " + dataMissRate + " " + "(" + dataHitRate + ")");
         System.out.println("replace: ");
         System.out.println("TRAFFIC (in words)");
