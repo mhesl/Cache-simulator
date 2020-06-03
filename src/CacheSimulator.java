@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,10 +13,10 @@ public class CacheSimulator {
     public static Cache instructionCache;
     public static String allocation;
     public static String policy;
-
+    public static int unifiedOrNot ;
+    public static DecimalFormat df = new DecimalFormat("0.0000");
     public static void main(String[] args) throws IOException {
         ArrayList<String[]> addresses = new ArrayList<>();
-        int unifiedOrNot = 0;
         int dataCacheSize = 0;
         int instructionCacheSize = 0;
         int blockSize = 0;
@@ -65,6 +67,7 @@ public class CacheSimulator {
         print();
     }
 
+
     public static void print() {
         float instructionMissRate;
         float instructionHitRate;
@@ -76,13 +79,22 @@ public class CacheSimulator {
         } else {
             instructionMissRate = (float) (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()) / (float) (instructionCache.getInsReadCounter() + dataCache.getInsReadCounter());
             instructionHitRate = 1 - instructionMissRate;
-
+        df.setRoundingMode(RoundingMode.FLOOR);
         }
         dataMissRate = (float) (dataCache.getDataReadMissCounter() + dataCache.getWriteMissCounter()) / (float) (dataCache.getWriteCounter() + dataCache.getDataReadCounter());
         dataHitRate = 1 - dataMissRate;
         System.out.println("***CACHE SETTINGS***");
-        System.out.println("Unified I- D-cache");
-        System.out.println("Size: " + instructionCache.getCapacity());
+        if(unifiedOrNot==0)
+            System.out.println("Unified I- D-cache");
+        else
+            System.out.println("Split I- D-cache");
+        if(unifiedOrNot == 0){
+            System.out.println("Size: " + dataCache.getCapacity());
+        }
+        else{
+            System.out.println("I-cache size: " + instructionCache.getCapacity());
+            System.out.println("D-cache size: " + dataCache.getCapacity());
+        }
         System.out.println("Associativity: " + instructionCache.getAssociativity());
         System.out.println("Block size: " + instructionCache.getBlockSize());
         if (policy.equals("wb"))
@@ -98,13 +110,13 @@ public class CacheSimulator {
         System.out.println("INSTRUCTIONS");
         System.out.println("accesses: " + (instructionCache.getWriteCounter() + instructionCache.getInsReadCounter() + dataCache.getInsReadCounter()));
         System.out.println("misses: " + (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()));
-        System.out.println("miss rate: " + instructionMissRate + " " + "(" + instructionHitRate + ")");
+        System.out.println("miss rate: " + df.format(instructionMissRate) + " " + "(hit rate " + df.format(instructionHitRate) + ")");
         System.out.println("replace: ");
 
         System.out.println("DATA");
         System.out.println("accesses: " + (dataCache.getWriteCounter() + dataCache.getDataReadCounter()));
         System.out.println("misses: " + (dataCache.getWriteMissCounter() + dataCache.getDataReadMissCounter()));
-        System.out.println("miss rate: " + dataMissRate + " " + "(" + dataHitRate + ")");
+        System.out.println("miss rate: " + df.format(dataMissRate) + " " + "(hit rate " + df.format(dataHitRate) + ")");
         System.out.println("replace: ");
         System.out.println("TRAFFIC (in words)");
         System.out.println("demand fetch: " + (dataCache.getFetch() + instructionCache.getFetch()));
