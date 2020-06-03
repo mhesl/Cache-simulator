@@ -35,7 +35,6 @@ public class Cache {
         writeMissCounter = 0;
         dataReadMissCounter = 0;
         cacheSets = new Set[capacity * 1024 / (associativity * blockSize)];
-        System.out.println(cacheSets.length + " ");
         for (int i = 0; i < cacheSets.length; i++) {
             cacheSets[i] = new Set(associativity, blockSize);
         }
@@ -44,6 +43,7 @@ public class Cache {
 
 
     public void allocateInCache(int address) {
+        fetch += 4;
         int setIndex = (address / blockSize) % cacheSets.length;
         Set currentSet = cacheSets[setIndex];
         Block currentBlock = currentSet.LRU_policy();
@@ -72,7 +72,6 @@ public class Cache {
                 insReadCounter++;
             }
             allocateInCache(address);
-            fetch += 4;
         }else{
             if(dataOrIns==0)
                 dataReadCounter++;

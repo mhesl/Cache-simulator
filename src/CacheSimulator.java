@@ -74,7 +74,7 @@ public class CacheSimulator {
             instructionMissRate = 0;
             instructionHitRate = 0;
         } else {
-            instructionMissRate = (float) (instructionCache.getInsMissReadCounter()  + dataCache.getInsMissReadCounter()) / (float) ( instructionCache.getInsReadCounter() + dataCache.getInsReadCounter());
+            instructionMissRate = (float) (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()) / (float) (instructionCache.getInsReadCounter() + dataCache.getInsReadCounter());
             instructionHitRate = 1 - instructionMissRate;
 
         }
