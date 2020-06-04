@@ -43,13 +43,13 @@ public class Cache {
 
 
     public void allocateInCache(int address) {
-        fetch += 4;
+        fetch += blockSize/4;
         int setIndex = (address / blockSize) % cacheSets.length;
         Set currentSet = cacheSets[setIndex];
         Block currentBlock = currentSet.LRU_policy();
         if (currentBlock.isDirty()) {
             if ((writePolicy.equals("wb")))
-                copyBacks += 4;
+                copyBacks += blockSize/4;
         }
 
         cacheSets[setIndex].LRU_policy().writeCompleteBlock((address / (cacheSets.length * blockSize)));
@@ -104,7 +104,7 @@ public class Cache {
                 if (allocation.equals("wa")) {
                     int setIndex = (address / blockSize) % cacheSets.length;
                     if (cacheSets[setIndex].SetOccupied() >= associativity){
-                            dataReplaceCounter++;
+                        dataReplaceCounter++;
                     }
                     allocateInCache(address);
                     cacheSets[setIndex].write((address / (cacheSets.length * blockSize)));
@@ -145,7 +145,7 @@ public class Cache {
             for (int j = 0; j < cacheSets[i].blocks.length; j++) {
                 if (cacheSets[i].blocks[j].isDirty()) {
 //                    System.out.println("Flushing  " + i + " " + cacheSets[i].blocks[j].getTag());
-                    copyBacks += 4;
+                    copyBacks += blockSize/4;
                 }
 
             }

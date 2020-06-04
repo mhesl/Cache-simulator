@@ -106,7 +106,7 @@ public class CacheSimulator {
         if (policy.equals("wb"))
             System.out.println("Write policy: WRITE BACK");
         else if (policy.equals("wt"))
-            System.out.println("WRITE THROUGH");
+            System.out.println("Write policy: WRITE THROUGH");
         if (allocation.equals("wa"))
             System.out.println("Allocation policy: WRITE ALLOCATE");
         else if (allocation.equals("nw"))
@@ -116,7 +116,11 @@ public class CacheSimulator {
         System.out.println("INSTRUCTIONS");
         System.out.println("accesses: " + (instructionCache.getWriteCounter() + instructionCache.getInsReadCounter() + dataCache.getInsReadCounter()));
         System.out.println("misses: " + (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()));
-        System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(instructionMissRate), 1-getRate(instructionMissRate));
+        if((unifiedOrNot == 1 && instructionCache.getInsReadCounter() == 0) || (unifiedOrNot == 0 && dataCache.getInsReadCounter() == 0)){
+            System.out.printf("miss rate: 0.0000 (hit rate 0.0000)\n");
+        }else{
+            System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(instructionMissRate), 1-getRate(instructionMissRate));
+        }
         if (unifiedOrNot == 1){
             System.out.println("replace: " + instructionCache.getInstructionReplaceCounter());
         }else{
@@ -126,7 +130,11 @@ public class CacheSimulator {
         System.out.println("DATA");
         System.out.println("accesses: " + (dataCache.getWriteCounter() + dataCache.getDataReadCounter()));
         System.out.println("misses: " + (dataCache.getWriteMissCounter() + dataCache.getDataReadMissCounter()));
-        System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(dataMissRate), 1-getRate(dataMissRate));
+        if(unifiedOrNot == 0 && dataCache.getDataReadCounter() == 0){
+            System.out.printf("miss rate: 0.0000 (hit rate 0.0000)\n");
+        }else{
+            System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(dataMissRate), 1-getRate(dataMissRate));
+        }
         System.out.println("replace: " + dataCache.getDataReplaceCounter());
         System.out.println("TRAFFIC (in words)");
         System.out.println("demand fetch: " + (dataCache.getFetch() + instructionCache.getFetch()));

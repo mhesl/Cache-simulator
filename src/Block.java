@@ -1,4 +1,5 @@
-public class Block {
+public
+class Block {
     private int size ;
     private int tag ;
     private int recentUse ;
