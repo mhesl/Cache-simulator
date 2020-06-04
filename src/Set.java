@@ -1,9 +1,21 @@
+import java.util.Arrays;
+
 public class Set {
 
     int blockSize ;
     int associativity ;
     int counter;
     Block[] blocks ;
+
+    public int SetOccupied(){
+        int i = 0;
+        for (Block value : blocks) {
+            if (value.getTag() != -1){
+                i++;
+            }
+        }
+        return i;
+    }
 
     public Set(int blockSize, int associativity) {
         this.blockSize = blockSize;
@@ -17,6 +29,10 @@ public class Set {
 
     public Block findBlock(int tag){
         Block block = null ;
+//        for (Block value : blocks) {
+//            System.out.print(" Block is : " + value.getTag());
+//        }
+//        System.out.println();
         for (Block value : blocks) {
             if (value.isValid() && value.getTag() == tag) {
                 block = value;
@@ -31,7 +47,7 @@ public class Set {
         if(currentBlock !=null){
             currentBlock.read(offset ,++counter);
         }else{
-            System.out.println("fuck");
+//            System.out.println("fuck");
         }
     }
 
@@ -40,7 +56,7 @@ public class Set {
         if(currentBlock != null){
             currentBlock.write( ++counter);
         }else{
-            System.out.println("we do not have this block here man");
+//            System.out.println("we do not have this block here man");
         }
     }
 

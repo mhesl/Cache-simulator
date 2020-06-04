@@ -61,13 +61,19 @@ public class CacheSimulator {
                     dataCache.read(address, 1);
             }
         }
-        if (policy.equals("wb") && allocation.equals("wa"))
+        if (policy.equals("wb"))
             dataCache.clearCacheCompletely();
         instructionCache.clearCacheCompletely();
         print();
     }
 
 
+    static double getRate(double num){
+        num *= 10000;
+        num = Math.round(num);
+        num /= 10000;
+        return num;
+    }
     public static void print() {
         float instructionMissRate;
         float instructionHitRate;
@@ -103,21 +109,25 @@ public class CacheSimulator {
             System.out.println("WRITE THROUGH");
         if (allocation.equals("wa"))
             System.out.println("Allocation policy: WRITE ALLOCATE");
-        else if (allocation.equals("wn"))
+        else if (allocation.equals("nw"))
             System.out.println("Allocation policy: WRITE NO ALLOCATE");
         System.out.println();
         System.out.println("***CACHE STATISTICS***");
         System.out.println("INSTRUCTIONS");
         System.out.println("accesses: " + (instructionCache.getWriteCounter() + instructionCache.getInsReadCounter() + dataCache.getInsReadCounter()));
         System.out.println("misses: " + (instructionCache.getInsMissReadCounter() + dataCache.getInsMissReadCounter()));
-        System.out.println("miss rate: " + df.format(instructionMissRate) + " " + "(hit rate " + df.format(instructionHitRate) + ")");
-        System.out.println("replace: ");
+        System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(instructionMissRate), 1-getRate(instructionMissRate));
+        if (unifiedOrNot == 1){
+            System.out.println("replace: " + instructionCache.getInstructionReplaceCounter());
+        }else{
+            System.out.println("replace: " + dataCache.getInstructionReplaceCounter());
+        }
 
         System.out.println("DATA");
         System.out.println("accesses: " + (dataCache.getWriteCounter() + dataCache.getDataReadCounter()));
         System.out.println("misses: " + (dataCache.getWriteMissCounter() + dataCache.getDataReadMissCounter()));
-        System.out.println("miss rate: " + df.format(dataMissRate) + " " + "(hit rate " + df.format(dataHitRate) + ")");
-        System.out.println("replace: ");
+        System.out.printf("miss rate: %.4f (hit rate %.4f)\n", getRate(dataMissRate), 1-getRate(dataMissRate));
+        System.out.println("replace: " + dataCache.getDataReplaceCounter());
         System.out.println("TRAFFIC (in words)");
         System.out.println("demand fetch: " + (dataCache.getFetch() + instructionCache.getFetch()));
         System.out.println("copies back: " + (dataCache.getCopyBacks() + instructionCache.getCopyBacks()));

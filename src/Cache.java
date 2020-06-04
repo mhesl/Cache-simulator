@@ -9,6 +9,8 @@ public class Cache {
     private int dataReadCounter;
     private int writeMissCounter;
     private int dataReadMissCounter;
+    private int dataReplaceCounter;
+    private int instructionReplaceCounter;
     private int exitCounter;
     private int copyBacks;
     private int fetch;
@@ -17,7 +19,6 @@ public class Cache {
     String allocation;
     String writePolicy;
     Set[] cacheSets;
-
 
 
     public Cache(int capacity, int associativity, int blockSize, String allocation, String writePolicy) {
@@ -34,12 +35,11 @@ public class Cache {
         dataReadCounter = 0;
         writeMissCounter = 0;
         dataReadMissCounter = 0;
-        cacheSets = new Set[capacity * 1024 / (associativity * blockSize)];
+        cacheSets = new Set[capacity / (associativity * blockSize)];
         for (int i = 0; i < cacheSets.length; i++) {
-            cacheSets[i] = new Set(associativity, blockSize);
+            cacheSets[i] = new Set(blockSize, associativity);
         }
     }
-
 
 
     public void allocateInCache(int address) {
@@ -48,7 +48,7 @@ public class Cache {
         Set currentSet = cacheSets[setIndex];
         Block currentBlock = currentSet.LRU_policy();
         if (currentBlock.isDirty()) {
-            if ((writePolicy.equals("wb") && allocation.equals("wa")))
+            if ((writePolicy.equals("wb")))
                 copyBacks += 4;
         }
 
@@ -58,12 +58,24 @@ public class Cache {
     public boolean isBlockInCache(int address) {
 
         int setIndex = (address / blockSize) % cacheSets.length;
-        return cacheSets[setIndex].findBlock((address / (cacheSets.length * blockSize))) != null;
+        int tag = (address / (cacheSets.length * blockSize));
+//        System.out.println("checking " + setIndex + " " + tag);
+        return cacheSets[setIndex].findBlock(tag) != null;
     }
 
 
     public void read(int address, int dataOrIns) {
-        if (!isBlockInCache(address)) {
+        boolean hit = isBlockInCache(address);
+        if (!hit) {
+//            System.out.printf("data %d [%d] miss\n", address, dataOrIns);
+            int setIndex = (address / blockSize) % cacheSets.length;
+            if (cacheSets[setIndex].SetOccupied() >= associativity){
+                if (dataOrIns == 0){
+                    dataReplaceCounter++;
+                }else{
+                    instructionReplaceCounter++;
+                }
+            }
             if (dataOrIns == 0) {
                 dataReadMissCounter++;
                 dataReadCounter++;
@@ -72,12 +84,12 @@ public class Cache {
                 insReadCounter++;
             }
             allocateInCache(address);
-        }else{
-            if(dataOrIns==0)
+        } else {
+//            System.out.printf("data %d [%d] hit\n", address, dataOrIns);
+            if (dataOrIns == 0)
                 dataReadCounter++;
             else
                 insReadCounter++;
-
         }
         int setIndex = (address / blockSize) % cacheSets.length;
         int blockAddress = address % blockSize;
@@ -86,24 +98,45 @@ public class Cache {
     }
 
     public void write(int address) {
-        if ((writePolicy.equals("wt") && allocation.equals("wn"))) {
-            writeMissCounter++;
-        }
+        if (writePolicy.equals("wb")) {
+            if (!isBlockInCache(address)) {
+                writeMissCounter++;
+                if (allocation.equals("wa")) {
+                    int setIndex = (address / blockSize) % cacheSets.length;
+                    if (cacheSets[setIndex].SetOccupied() >= associativity){
+                            dataReplaceCounter++;
+                    }
+                    allocateInCache(address);
+                    cacheSets[setIndex].write((address / (cacheSets.length * blockSize)));
+                } else {
+                    copyBacks++;
+                }
+            } else {
+                int setIndex = (address / blockSize) % cacheSets.length;
+                cacheSets[setIndex].write((address / (cacheSets.length * blockSize)));
+            }
+        } else {
+            if (!isBlockInCache(address)) {
+                writeMissCounter++;
+                if (allocation.equals("wa")) {
+                    int setIndex = (address / blockSize) % cacheSets.length;
+                    if (cacheSets[setIndex].SetOccupied() >= associativity){
+                        dataReplaceCounter++;
+                    }
 
-        if (!isBlockInCache(address)) {
-            writeMissCounter++;
-            if ((writePolicy.equals("wb") && allocation.equals("wa")) || (writePolicy.equals("wt") && allocation.equals("wa"))) {
-                allocateInCache(address);
+                    copyBacks++;
+                    allocateInCache(address);
+                    cacheSets[setIndex].write((address / (cacheSets.length * blockSize)));
+                } else {
+                    copyBacks++;
+                }
+            } else {
+                copyBacks++;
                 int setIndex = (address / blockSize) % cacheSets.length;
                 cacheSets[setIndex].write((address / (cacheSets.length * blockSize)));
             }
         }
-        if (!(writePolicy.equals("wb") && allocation.equals("wa"))) {
-            copyBacks += 1;
-        }
         writeCounter++;
-
-
     }
 
 
@@ -111,6 +144,7 @@ public class Cache {
         for (int i = 0; i < cacheSets.length; i++) {
             for (int j = 0; j < cacheSets[i].blocks.length; j++) {
                 if (cacheSets[i].blocks[j].isDirty()) {
+//                    System.out.println("Flushing  " + i + " " + cacheSets[i].blocks[j].getTag());
                     copyBacks += 4;
                 }
 
@@ -132,7 +166,7 @@ public class Cache {
 //            System.out.println("WRITE THROUGH");
 //        if(allocation.equals("wa"))
 //            System.out.println("Allocation policy: WRITE ALLOCATE");
-//        else if(allocation.equals("wn"))
+//        else if(allocation.equals("nw"))
 //            System.out.println("Allocation policy: WRITE NO ALLOCATE");
 //        System.out.println();
 //        System.out.println("***CACHE STATISTICS***");
@@ -190,4 +224,12 @@ public class Cache {
     public int getInsReadCounter() {
         return insReadCounter;
     }
+    public int getDataReplaceCounter() {
+        return dataReplaceCounter;
+    }
+
+    public int getInstructionReplaceCounter() {
+        return instructionReplaceCounter;
+    }
+
 }

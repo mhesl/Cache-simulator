@@ -10,6 +10,7 @@ public class Block {
         isValid = false ;
         isDirty = false ;
         recentUse = 0 ;
+        tag = -1;
     }
 
     public void read(int address , int recentlyUseCounter){
